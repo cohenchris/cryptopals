@@ -1,0 +1,21 @@
+#!/bin/python
+
+# https://cryptopals.com/sets/1/challenges/3
+
+from challenge1 import hex_to_binary
+
+def single_byte_xor(hex_str, byte):
+    binary_str = hex_to_binary(hex_str)
+
+    for i in range(len(binary_str)):
+
+
+def brute_force_decrypt(hex_str):
+    for i in range(256):
+        plaintext_candidate = single_byte_xor(hex_str, i)
+        print(plaintext_candidate)
+
+
+hex_str = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
+
+if __name__ == "__main__":
