@@ -1,10 +1,11 @@
 #!/bin/python
+
 # https://cryptopals.com/sets/1/challenges/6
 
 from __future__ import division
 from base64 import b64decode
 import sys
-from pprint import pprint
+from itertools import combinations
 
 from challenge1 import hex_to_binary
 from challenge3 import decrypt_string_xored_by_single_char, score_string, hex_to_ascii
@@ -35,55 +36,42 @@ def compute_hamming_distance(str1, str2):
 
 
 
-def find_key_candidates(content):
+def find_key(data):
     candidates = {}
     for i in range(2, MAXKEYSIZE):
-        KEYSIZE = i
-        first_n_bytes = content[:KEYSIZE]
-        second_n_bytes = content[KEYSIZE:KEYSIZE*2]
+        first_n_bytes = content[:i]
+        second_n_bytes = content[i:i*2]
 
-        diff = compute_hamming_distance(first_n_bytes, second_n_bytes)
-        candidates[KEYSIZE] = diff/KEYSIZE
+        chunks = [data[j:j + i] for j in range(0, len(data), i)][:4]
+        distance = 0
+        pairs = combinations(chunks, 2)
+        for (x, y) in pairs:
+            distance += compute_hamming_distance(x, y)
+        distance /= (6 * i)
 
-    return sorted(candidates, key=lambda c: candidates[c])[:3]
+        candidates[i] = distance
+
+    return min(candidates, key=lambda c: candidates[c])
 
 
 
 def break_repeating_key_xor(data):
-    key_candidates = find_key_candidates(data)
+    keysize = find_key(data)
 
-    possible_plaintexts = []
+    # Try decrypting the ciphertext given keysize
+    key = b''
 
-    for candidate in key_candidates:
-        key = b''
-        blocks = []
+    for i in range(keysize):
+        block = b''
+        for j in range(i, len(data), keysize):
+            block += bytes([data[j]])
 
+        key += bytes([decrypt_string_xored_by_single_char(block)["key"]])
 
-        # Break ciphertext into blocks of 'candidate' length
-        for i in range(candidate):
-            block = b''
+    temp = repeating_key_xor(data, key).decode()
+    plaintext = hex_to_ascii(temp)
 
-            # Transpose blocks into blocks of the i-th byte of each block
-            for j in range(i, len(data), candidate):
-                block += bytes([data[j]])
-    
-            blocks.append(block)
-
-
-        # Brute-force solve each block
-        for block in blocks:
-            key += bytes([decrypt_string_xored_by_single_char(block.hex())["key"]])
-
-        # todo
-        
-        temp = repeating_key_xor(data, key).decode()
-        bytes_obj = bytes.fromhex(temp)
-        ascii_str = bytes_obj.decode("ASCII")
-        possible_plaintexts.append(ascii_str)
-
-    pprint(possible_plaintexts)
-
-    return max(possible_plaintexts, key=score_string)
+    return plaintext
 
 
 

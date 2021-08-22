@@ -1,5 +1,4 @@
 #!/bin/python
-
 # https://cryptopals.com/sets/1/challenges/3
 
 from challenge1 import hex_to_binary
@@ -34,13 +33,10 @@ letterFrequency = {'E' : 12.0,
         'Z' : 0.07,
         ' ' : 19 }
 
-def score_string(string):
+def score_string(input_bytes):
     score = 0
-    for char in string:
-        try:
-            score = score + letterFrequency[char.upper()]
-        except KeyError:
-            continue
+    for char in input_bytes:
+        score = score + letterFrequency.get(chr(char).upper(), 0)
 
     return score
 
@@ -57,10 +53,9 @@ def hex_to_ascii(hex_val):
 
 def single_byte_xor(hex_val, byte):
     result = b''
-    for i in range(0, len(hex_val), 2):
-        result += hex_xor(hex_val[i:i+2], hex(byte)[2:].zfill(2))
+    for hex_char in hex_val:
+        result += bytes([hex_char ^ byte])
 
-    result = hex_to_ascii(result)
     return result
 
 
@@ -75,7 +70,7 @@ def decrypt_string_xored_by_single_char(hex_str):
     return {"key": key, "plaintext": plaintext_candidates[key]}
 
 
-hex_str = b'1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736'
 
+hex_str = bytes.fromhex("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736")
 if __name__ == "__main__":
-    assert decrypt_string_xored_by_single_char(hex_str)["plaintext"] == "Cooking MC's like a pound of bacon"
+    assert decrypt_string_xored_by_single_char(hex_str)["plaintext"] == b"Cooking MC's like a pound of bacon"
