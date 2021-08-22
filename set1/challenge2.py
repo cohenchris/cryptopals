@@ -5,22 +5,14 @@
 from challenge1 import hex_to_binary
 
 
-def compute_xor(str1, str2):
-    assert len(str1) == len(str2)
-
-    binary_str1 = hex_to_binary(str1)
-    binary_str2 = hex_to_binary(str2)
-    xor_str = ""
-
-    for i in range(len(binary_str1)):
-        xor_str = xor_str + str((int(binary_str1[i], 2) ^ int(binary_str2[i], 2)))
-
-    return hex(int(xor_str, 2))[2:]
+def hex_xor(hex1, hex2):
+    xor = int(hex1, 16) ^ int(hex2, 16)
+    return hex(xor)[2:].encode()
 
 
-str1 = "1c0111001f010100061a024b53535009181c"
-str2 = "686974207468652062756c6c277320657965"
-solution = "746865206b696420646f6e277420706c6179"
+str1 = b'1c0111001f010100061a024b53535009181c'
+str2 = b'686974207468652062756c6c277320657965'
+solution = b'746865206b696420646f6e277420706c6179'
 
 if __name__ == "__main__":
-    assert compute_xor(str1, str2) == solution
+    assert hex_xor(str1, str2) == solution

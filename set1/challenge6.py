@@ -4,8 +4,11 @@
 from __future__ import division
 from base64 import b64decode
 import sys
+from pprint import pprint
 
 from challenge1 import hex_to_binary
+from challenge3 import decrypt_string_xored_by_single_char, score_string, hex_to_ascii
+from challenge5 import repeating_key_xor
 
 MAXKEYSIZE = 40
 
@@ -46,22 +49,41 @@ def find_key_candidates(content):
 
 
 
-def break_repeating_key_xor(filename):
-    content = ""
-    with open(filename, "r") as f:
-        content = b64decode(f.read())
+def break_repeating_key_xor(data):
+    key_candidates = find_key_candidates(data)
 
-    key_candidates = find_key_candidates(content)
+    possible_plaintexts = []
 
-    for key in key_candidates:
-        # Break ciphertext into blocks of 'key' length
-        for i in range(key):
-            # Transpose blocks
-            for j in range(i, len(content), key):
-                block = block + bytes(
-                # TODO ...
+    for candidate in key_candidates:
+        key = b''
+        blocks = []
 
 
+        # Break ciphertext into blocks of 'candidate' length
+        for i in range(candidate):
+            block = b''
+
+            # Transpose blocks into blocks of the i-th byte of each block
+            for j in range(i, len(data), candidate):
+                block += bytes([data[j]])
+    
+            blocks.append(block)
+
+
+        # Brute-force solve each block
+        for block in blocks:
+            key += bytes([decrypt_string_xored_by_single_char(block.hex())["key"]])
+
+        # todo
+        
+        temp = repeating_key_xor(data, key).decode()
+        bytes_obj = bytes.fromhex(temp)
+        ascii_str = bytes_obj.decode("ASCII")
+        possible_plaintexts.append(ascii_str)
+
+    pprint(possible_plaintexts)
+
+    return max(possible_plaintexts, key=score_string)
 
 
 
@@ -72,4 +94,7 @@ str2 = b'wokka wokka!!!'
 if __name__ == "__main__":
     assert compute_hamming_distance(str1, str2) == 37
 
-    break_repeating_key_xor("6.txt")
+    with open("6.txt", "r") as f:
+        content = b64decode(f.read())
+
+    break_repeating_key_xor(content)

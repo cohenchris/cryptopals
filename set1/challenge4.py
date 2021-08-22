@@ -2,13 +2,13 @@
 
 # https://cryptopals.com/sets/1/challenges/4
 
-from challenge3 import brute_force_decrypt, score_string
+from challenge3 import decrypt_string_xored_by_single_char, score_string
 
 def decrypt_file(filename):
     with open(filename, "r") as f:
         lines = f.readlines()
 
-    candidates = [brute_force_decrypt(line.strip()) for line in lines]
+    candidates = [decrypt_string_xored_by_single_char(line.strip()) for line in lines]
 
     return max(candidates, key=score_string)
 

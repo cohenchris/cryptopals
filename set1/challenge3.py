@@ -3,7 +3,7 @@
 # https://cryptopals.com/sets/1/challenges/3
 
 from challenge1 import hex_to_binary
-from challenge2 import compute_xor
+from challenge2 import hex_xor
 
 # https://gist.github.com/pozhidaevak/0dca594d6f0de367f232909fe21cdb2f
 letterFrequency = {'E' : 12.0,
@@ -46,35 +46,36 @@ def score_string(string):
 
 
 
-def hex_to_ascii(hex_str):
+def hex_to_ascii(hex_val):
     ascii_str = ""
-    for i in range(0, len(hex_str), 2):
-        ascii_str = ascii_str + chr(int(hex_str[i:i+2], 16))
+    for i in range(0, len(hex_val), 2):
+        ascii_str = ascii_str + chr(int(hex_val[i:i+2], 16))
 
     return ascii_str
 
 
 
-def single_byte_xor(hex_str, byte):
-    result = ""
-    for i in range(0, len(hex_str), 2):
-        result = result + compute_xor(hex_str[i:i+2], hex(byte)[2:].zfill(2))
+def single_byte_xor(hex_val, byte):
+    result = b''
+    for i in range(0, len(hex_val), 2):
+        result += hex_xor(hex_val[i:i+2], hex(byte)[2:].zfill(2))
 
     result = hex_to_ascii(result)
     return result
 
 
 
-def brute_force_decrypt(hex_str):
-    plaintext_candidates = []
+def decrypt_string_xored_by_single_char(hex_str):
+    plaintext_candidates = {}
     for i in range(256):
-        plaintext_candidates.append(single_byte_xor(hex_str, i))
+        plaintext_candidates[i] = single_byte_xor(hex_str, i)
 
-    return max(plaintext_candidates, key=score_string)
+    key = max(plaintext_candidates, key=lambda c: score_string(plaintext_candidates[c]))
+
+    return {"key": key, "plaintext": plaintext_candidates[key]}
 
 
-hex_str = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
+hex_str = b'1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736'
 
 if __name__ == "__main__":
-    assert brute_force_decrypt(hex_str) == "Cooking MC's like a pound of bacon"
-
+    assert decrypt_string_xored_by_single_char(hex_str)["plaintext"] == "Cooking MC's like a pound of bacon"
