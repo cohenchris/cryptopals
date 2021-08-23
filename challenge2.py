@@ -4,7 +4,6 @@
 
 from challenge1 import hex_to_binary
 
-
 def hex_xor(hex1, hex2):
     xor = int(hex1, 16) ^ int(hex2, 16)
     return hex(xor)[2:].encode()
